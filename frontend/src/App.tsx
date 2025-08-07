@@ -6,9 +6,13 @@ import axios from 'axios';
 import ModernNavbar from './components/ModernNavbar';
 import AnimatedHero from './components/AnimatedHero';
 import AnimatedContact from './components/AnimatedContact';
+import EnhancedSkills from './components/EnhancedSkills';
+import EnhancedProjects from './components/EnhancedProjects';
+import { ScrollProgressIndicator, ScrollToTopButton } from './components/ScrollIndicators';
+import { ModernLoader, ErrorScreen } from './components/ModernLoader';
 import './index.css';
 
-// Simplified components that use our API structure
+// Simplified components that use our API structure (keeping as fallback)
 const SimpleSkillsSection: React.FC<{ skills: any[], technologies: any[] }> = ({ skills, technologies }) => (
   <section id="skills" className="min-h-screen bg-gradient-to-br from-blue-900 via-gray-900 to-purple-900 py-20">
     <div className="container mx-auto px-4">
@@ -264,98 +268,18 @@ function App() {
 
   // Loading Screen
   if (loading) {
-    return (
-      <div className="fixed inset-0 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center z-50">
-        <div className="text-center">
-          <motion.div
-            className="mb-8"
-            animate={{
-              scale: [1, 1.1, 1],
-              rotate: [0, 180, 360]
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Loader2 className="w-16 h-16 text-blue-400" />
-          </motion.div>
-          
-          <motion.h2
-            className="text-2xl font-bold text-white mb-4"
-            animate={{
-              opacity: [0.5, 1, 0.5]
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            Loading Portfolio
-          </motion.h2>
-          
-          <motion.div
-            className="flex justify-center space-x-1"
-          >
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-2 h-2 bg-blue-400 rounded-full"
-                animate={{
-                  y: [0, -10, 0]
-                }}
-                transition={{
-                  duration: 0.5,
-                  repeat: Infinity,
-                  delay: i * 0.2
-                }}
-              />
-            ))}
-          </motion.div>
-        </div>
-      </div>
-    );
+    return <ModernLoader />;
   }
 
   // Error Screen
   if (error || !developer) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-900 to-gray-900 flex items-center justify-center px-4">
-        <motion.div
-          className="text-center max-w-md"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="text-6xl mb-6"
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
-          >
-            ⚠️
-          </motion.div>
-          
-          <h1 className="text-3xl font-bold text-red-400 mb-4">Oops!</h1>
-          <p className="text-gray-300 mb-8">{error || 'Developer data not found'}</p>
-          
-          <motion.button
-            onClick={fetchData}
-            className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Try Again
-          </motion.button>
-        </motion.div>
-      </div>
-    );
+    return <ErrorScreen error={error || 'Developer data not found'} onRetry={fetchData} />;
   }
 
   return (
     <Router>
       <div className="App">
+        <ScrollProgressIndicator />
         <ModernNavbar developer={developer} />
         
         {/* Hero Section */}
@@ -419,10 +343,10 @@ function App() {
         </section>
 
         {/* Skills Section */}
-        <SimpleSkillsSection skills={skills} technologies={technologies} />
+        <EnhancedSkills skills={skills} technologies={technologies} />
 
         {/* Projects Section */}
-        <SimpleProjectsSection projects={projects} />
+        <EnhancedProjects projects={projects} />
 
         {/* Experience Section */}
         <SimpleExperienceSection experiences={experiences} />
@@ -431,6 +355,8 @@ function App() {
         <section id="contact" className="min-h-screen">
           <AnimatedContact developer={developer} />
         </section>
+        
+        <ScrollToTopButton />
       </div>
     </Router>
   );
