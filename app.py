@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_mail import Mail, Message
-from models import db, Developer, Skill, Project, Experience, Contact, SiteSettings
+from models import db, Developer, Skill, Project, Technology, ProjectTechnology, Experience, ExperienceTechnology, Contact, SiteSettings
 import os
 from datetime import datetime
 import json
@@ -87,6 +87,22 @@ def get_experience():
     try:
         experiences = Experience.query.order_by(Experience.start_date.desc()).all()
         return jsonify([exp.to_dict() for exp in experiences])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/experiences')
+def get_experiences():
+    try:
+        experiences = Experience.query.order_by(Experience.start_date.desc()).all()
+        return jsonify([exp.to_dict() for exp in experiences])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/technologies')
+def get_technologies():
+    try:
+        technologies = Technology.query.order_by(Technology.name).all()
+        return jsonify([tech.to_dict() for tech in technologies])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -203,5 +219,6 @@ def init_app():
             init_database()
 
 if __name__ == '__main__':
-    init_app()
-    app.run(debug=True, port=5000)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, port=5001)
