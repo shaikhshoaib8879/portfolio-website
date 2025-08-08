@@ -48,13 +48,28 @@ def get_developer_info():
 def get_skills():
     try:
         featured_only = request.args.get('featured', 'false').lower() == 'true'
+        category = request.args.get('category', '').strip()
+        
+        query = Skill.query
         
         if featured_only:
-            skills = Skill.query.filter_by(is_featured=True).order_by(Skill.level.desc()).all()
-        else:
-            skills = Skill.query.order_by(Skill.category, Skill.level.desc()).all()
+            query = query.filter_by(is_featured=True)
+        
+        if category and category.lower() != 'all':
+            query = query.filter_by(category=category)
+        
+        skills = query.order_by(Skill.level.desc()).all()
         
         return jsonify([skill.to_dict() for skill in skills])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/skills/categories')
+def get_skill_categories():
+    try:
+        categories = db.session.query(Skill.category).distinct().all()
+        category_list = [cat[0] for cat in categories if cat[0]]  # Filter out None values
+        return jsonify(sorted(category_list))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -348,4 +363,9 @@ def init_app():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=5001)
+    
+    # Get port from environment variable (Render uses PORT)
+    port = int(os.environ.get('PORT', 5001))
+    debug = os.environ.get('FLASK_ENV', 'development') != 'production'
+    
+    app.run(host='0.0.0.0', port=port, debug=debug)

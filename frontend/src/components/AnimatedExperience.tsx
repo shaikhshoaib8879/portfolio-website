@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useAnimation, useInView, useMotionValue, useTransform } from 'framer-motion';
 import { Building2, Calendar, MapPin, TrendingUp, Users, Award, Briefcase, GraduationCap, Rocket, Star, Zap, Target } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 interface Experience {
   id: number;
@@ -47,6 +48,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
   const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([]);
   const [hoveredExperience, setHoveredExperience] = useState<number | null>(null);
 
+  // All hooks must be called before any early returns
   useEffect(() => {
     if (isInView) {
       controls.start('visible');
@@ -55,6 +57,8 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
 
   // Initialize floating icons
   useEffect(() => {
+    if (!experiences || experiences.length === 0) return; // Only run if we have experiences
+    
     const icons = [Rocket, Star, Zap, Target, Award, TrendingUp, Users, Building2];
     const newIcons: FloatingIcon[] = Array.from({ length: 15 }, (_, i) => ({
       id: i,
@@ -66,10 +70,12 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
       speed: 0.3 + Math.random() * 0.7
     }));
     setFloatingIcons(newIcons);
-  }, []);
+  }, [experiences]);
 
   // Animate floating icons
   useEffect(() => {
+    if (!experiences || experiences.length === 0) return; // Only run if we have experiences
+    
     const animateIcons = () => {
       setFloatingIcons(prev => prev.map(icon => ({
         ...icon,
@@ -80,7 +86,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
 
     const interval = setInterval(animateIcons, 50);
     return () => clearInterval(interval);
-  }, []);
+  }, [experiences]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     const rect = ref.current?.getBoundingClientRect();
@@ -91,6 +97,42 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
       mouseY.set(y * 0.1);
     }
   }, [mouseX, mouseY]);
+
+  // Handle empty experiences data - moved after all hooks
+  if (!experiences || experiences.length === 0) {
+    return (
+      <motion.section
+        id="experience"
+        className="relative min-h-screen py-20 flex items-center justify-center"
+        style={{
+          background: `
+            radial-gradient(circle at 30% 30%, rgba(129, 140, 248, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 70% 70%, rgba(251, 191, 36, 0.1) 0%, transparent 50%),
+            linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)
+          `
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold text-white mb-4"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Work <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">Experience</span>
+            </motion.h2>
+          </div>
+          <EmptyState 
+            type="experience"
+            title="No Experience Available"
+            description="Work experience information is currently unavailable. Please check back later."
+          />
+        </div>
+      </motion.section>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },

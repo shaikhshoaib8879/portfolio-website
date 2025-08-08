@@ -4,6 +4,7 @@ import {
   Github, ExternalLink, Calendar, Star, Zap, TrendingUp, Award, Code, 
   Eye, Heart, GitBranch, Users, Clock, ArrowUpRight, Play 
 } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 interface Project {
   id: number;
@@ -395,6 +396,42 @@ const EnhancedProjects: React.FC<EnhancedProjectsProps> = ({ projects }) => {
     }
   }, [controls, isInView]);
 
+  // Handle empty projects data
+  if (!projects || projects.length === 0) {
+    return (
+      <motion.section
+        id="projects"
+        className="relative min-h-screen py-20 flex items-center justify-center"
+        style={{
+          background: `
+            radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 75% 75%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+            linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)
+          `
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold text-white mb-4"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              Featured <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent">Projects</span>
+            </motion.h2>
+          </div>
+          <EmptyState 
+            type="projects"
+            title="No Projects Available"
+            description="No projects are currently available to showcase. Please check back later for updates."
+          />
+        </div>
+      </motion.section>
+    );
+  }
+
   const getFilteredProjects = () => {
     let filtered = projects;
     
@@ -554,13 +591,23 @@ const EnhancedProjects: React.FC<EnhancedProjectsProps> = ({ projects }) => {
           animate={controls}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {filteredProjects.map((project, index) => (
-            <Enhanced3DProjectCard
-              key={project.id}
-              project={project}
-              index={index}
-            />
-          ))}
+          {filteredProjects.length > 0 ? (
+            filteredProjects.map((project, index) => (
+              <Enhanced3DProjectCard
+                key={project.id}
+                project={project}
+                index={index}
+              />
+            ))
+          ) : (
+            <div className="col-span-full">
+              <EmptyState 
+                type="projects"
+                title={`No ${filter === 'all' ? '' : filter} Projects Found`}
+                description={`No projects match the current filter "${filter}". Try selecting a different filter option.`}
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Show more projects button */}

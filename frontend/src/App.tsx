@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import ModernNavbar from './components/ModernNavbar';
 import AnimatedHero from './components/AnimatedHero';
 import AnimatedContact from './components/AnimatedContact';
+import AnimatedExperience from './components/AnimatedExperience';
 import EnhancedSkills from './components/EnhancedSkills';
 import EnhancedProjects from './components/EnhancedProjects';
 import { ScrollProgressIndicator, ScrollToTopButton } from './components/ScrollIndicators';
 import { ModernLoader, ErrorScreen } from './components/ModernLoader';
+import DataWarning from './components/DataWarning';
 import './index.css';
 
 // Simplified components that use our API structure (keeping as fallback)
@@ -232,6 +234,8 @@ function App() {
   const [experiences, setExperiences] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showDataWarning, setShowDataWarning] = useState(false);
+  const [missingData, setMissingData] = useState<string[]>([]);
 
   const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5001/api';
 
@@ -245,11 +249,11 @@ function App() {
       setError(null);
 
       const [devRes, skillsRes, techRes, projectsRes, expRes] = await Promise.all([
-        axios.get(`${API_BASE}/developer`),
-        axios.get(`${API_BASE}/skills`),
-        axios.get(`${API_BASE}/technologies`),
-        axios.get(`${API_BASE}/projects`),
-        axios.get(`${API_BASE}/experiences`),
+        axios.get(`${API_BASE}/developer`).catch(() => ({ data: null })),
+        axios.get(`${API_BASE}/skills`).catch(() => ({ data: [] })),
+        axios.get(`${API_BASE}/technologies`).catch(() => ({ data: [] })),
+        axios.get(`${API_BASE}/projects`).catch(() => ({ data: [] })),
+        axios.get(`${API_BASE}/experiences`).catch(() => ({ data: [] })),
       ]);
 
       setDeveloper(devRes.data);
@@ -257,6 +261,18 @@ function App() {
       setTechnologies(techRes.data || []);
       setProjects(projectsRes.data || []);
       setExperiences(expRes.data || []);
+
+      // Check for missing data and show warning
+      const missing: string[] = [];
+      if (!devRes.data) missing.push('Developer information');
+      if (!skillsRes.data || skillsRes.data.length === 0) missing.push('Skills data');
+      if (!projectsRes.data || projectsRes.data.length === 0) missing.push('Projects data');
+      if (!expRes.data || expRes.data.length === 0) missing.push('Experience data');
+
+      if (missing.length > 0) {
+        setMissingData(missing);
+        setShowDataWarning(true);
+      }
 
       setLoading(false);
     } catch (err) {
@@ -271,10 +287,20 @@ function App() {
     return <ModernLoader />;
   }
 
-  // Error Screen
-  if (error || !developer) {
-    return <ErrorScreen error={error || 'Developer data not found'} onRetry={fetchData} />;
+  // Error Screen - Only show if there's a critical error AND no developer data
+  if (error && !developer) {
+    return <ErrorScreen error={error} onRetry={fetchData} />;
   }
+
+  // Provide fallback developer data if missing
+  const developerData = developer || {
+    name: "Portfolio Owner",
+    title: "Developer",
+    bio: "Welcome to my portfolio.",
+    email: "contact@portfolio.com",
+    location: "Unknown",
+    experience_years: 0
+  };
 
   return (
     <Router>
@@ -282,9 +308,17 @@ function App() {
         <ScrollProgressIndicator />
         <ModernNavbar developer={developer} />
         
+        {/* Data Warning */}
+        {showDataWarning && (
+          <DataWarning 
+            missingData={missingData}
+            onDismiss={() => setShowDataWarning(false)}
+          />
+        )}
+        
         {/* Hero Section */}
         <section id="home" className="min-h-screen">
-          <AnimatedHero developer={developer} />
+          <AnimatedHero developer={developerData} />
         </section>
 
         {/* About Section */}
@@ -349,7 +383,7 @@ function App() {
         <EnhancedProjects projects={projects} />
 
         {/* Experience Section */}
-        <SimpleExperienceSection experiences={experiences} />
+        <AnimatedExperience experiences={experiences} />
 
         {/* Contact Section */}
         <section id="contact" className="min-h-screen">

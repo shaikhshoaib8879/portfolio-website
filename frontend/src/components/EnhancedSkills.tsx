@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, useAnimation, useInView, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Code2, Database, Globe, Server, Wrench, Brain, Star, Zap, Award, TrendingUp } from 'lucide-react';
+import EmptyState from './EmptyState';
 
 interface Skill {
   id: number;
@@ -51,9 +52,6 @@ const AnimatedCounter: React.FC<{
   const isInView = useInView(ref, { once: true });
   const [displayValue, setDisplayValue] = useState(0);
 
-  // Ensure value is a valid number
-  const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value));
-
   useEffect(() => {
     if (!isInView) return;
 
@@ -64,7 +62,7 @@ const AnimatedCounter: React.FC<{
       
       // Ease-out animation
       const easeOut = 1 - Math.pow(1 - progress, 3);
-      setDisplayValue(Math.floor(safeValue * easeOut));
+      setDisplayValue(Math.floor(value * easeOut));
 
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -72,7 +70,7 @@ const AnimatedCounter: React.FC<{
     };
 
     animate();
-  }, [isInView, safeValue, duration]);
+  }, [isInView, value, duration]);
 
   return <span ref={ref}>{displayValue}{suffix}</span>;
 };
@@ -333,12 +331,71 @@ const EnhancedSkillCard: React.FC<{
   );
 };
 
-const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills, technologies }) => {
+const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills: initialSkills, technologies }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const controls = useAnimation();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [skillDisplayStyle, setSkillDisplayStyle] = useState<'radial' | 'bar' | 'stars'>('radial');
+  const [skills, setSkills] = useState<Skill[]>(initialSkills || []);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5001/api';
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/skills/categories`);
+        const categoryData = await response.json();
+        setCategories(['all', ...categoryData]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Fallback to extracting categories from skills
+        if (initialSkills && initialSkills.length > 0) {
+          const uniqueCategories = Array.from(new Set(initialSkills.map(skill => skill.category)));
+          setCategories(['all', ...uniqueCategories]);
+        }
+      }
+    };
+
+    fetchCategories();
+  }, [API_BASE, initialSkills]);
+
+  // Fetch skills when category changes
+  useEffect(() => {
+    const fetchSkills = async () => {
+      if (selectedCategory === 'all' && initialSkills) {
+        setSkills(initialSkills);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const url = selectedCategory === 'all' 
+          ? `${API_BASE}/skills`
+          : `${API_BASE}/skills?category=${encodeURIComponent(selectedCategory)}`;
+        
+        const response = await fetch(url);
+        const skillData = await response.json();
+        setSkills(skillData || []);
+      } catch (error) {
+        console.error('Error fetching skills:', error);
+        // Fallback to client-side filtering
+        if (initialSkills) {
+          const filtered = selectedCategory === 'all' 
+            ? initialSkills 
+            : initialSkills.filter(skill => skill.category === selectedCategory);
+          setSkills(filtered);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, [selectedCategory, API_BASE, initialSkills]);
   
   useEffect(() => {
     if (isInView) {
@@ -346,14 +403,61 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills, technologies })
     }
   }, [isInView, controls]);
 
-  const skillsByCategory = skills.reduce((acc, skill) => {
-    if (!acc[skill.category]) acc[skill.category] = [];
-    acc[skill.category].push(skill);
-    return acc;
-  }, {} as Record<string, Skill[]>);
+  // Restart animation when skills change
+  useEffect(() => {
+    if (isInView && skills.length > 0) {
+      controls.set('hidden');
+      setTimeout(() => {
+        controls.start('visible');
+      }, 100);
+    }
+  }, [skills, isInView, controls]);
 
-  const categories = ['all', ...Object.keys(skillsByCategory)];
-  const filteredSkills = selectedCategory === 'all' ? skills : skillsByCategory[selectedCategory] || [];
+  // Debug logging
+  console.log('=== EnhancedSkills Debug ===');
+  console.log('Skills:', skills.length, skills);
+  console.log('Categories:', categories);
+  console.log('Selected Category:', selectedCategory);
+  console.log('Loading:', loading);
+  console.log('IsInView:', isInView);
+  console.log('Initial Skills:', initialSkills?.length || 0);
+
+  // Handle empty skills data
+  if (!initialSkills || initialSkills.length === 0) {
+    return (
+      <motion.section
+        id="skills"
+        className="relative min-h-screen py-20 flex items-center justify-center"
+        style={{
+          background: `
+            radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(147, 51, 234, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 60%, rgba(16, 185, 129, 0.15) 0%, transparent 50%),
+            linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)
+          `
+        }}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <motion.h2
+              className="text-4xl md:text-5xl font-bold text-white mb-4"
+              initial={{ opacity: 0, y: -30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              My <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-teal-400 bg-clip-text text-transparent">Skills</span>
+            </motion.h2>
+          </div>
+          <EmptyState 
+            type="skills"
+            title="No Skills Available"
+            description="Skills data is currently unavailable. Please check back later or contact me directly."
+          />
+        </div>
+      </motion.section>
+    );
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -504,19 +608,49 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills, technologies })
 
         {/* Skills Grid */}
         <motion.div
+          key={selectedCategory} // Force re-render when category changes
           variants={containerVariants}
           initial="hidden"
           animate={controls}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
         >
-          {filteredSkills.map((skill, index) => (
-            <EnhancedSkillCard
-              key={skill.id}
-              skill={skill}
-              index={index}
-              style={skillDisplayStyle}
-            />
-          ))}
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 8 }).map((_, index) => (
+              <div
+                key={`skeleton-${index}`}
+                className="bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 animate-pulse"
+              >
+                <div className="flex items-center justify-center w-14 h-14 rounded-xl bg-white/10 mb-4 mx-auto"></div>
+                <div className="h-6 bg-white/10 rounded mb-2 mx-auto w-24"></div>
+                <div className="h-4 bg-white/10 rounded mb-4 mx-auto w-16"></div>
+                <div className="h-24 bg-white/10 rounded mx-auto"></div>
+              </div>
+            ))
+          ) : skills.length > 0 ? (
+            skills.map((skill, index) => {
+              console.log(`Rendering skill ${index}:`, skill);
+              return (
+                <EnhancedSkillCard
+                  key={`${skill.id}-${selectedCategory}`}
+                  skill={skill}
+                  index={index}
+                  style={skillDisplayStyle}
+                />
+              );
+            })
+          ) : (
+            <div className="col-span-full">
+              <EmptyState 
+                type="skills"
+                title={selectedCategory === 'all' ? "No Skills Found" : `No ${selectedCategory} Skills Found`}
+                description={selectedCategory === 'all' 
+                  ? "No skills are currently available to display."
+                  : `No skills found in the ${selectedCategory} category. Try selecting a different category.`
+                }
+              />
+            </div>
+          )}
         </motion.div>
 
         {/* Technologies Section (if provided) */}
