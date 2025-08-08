@@ -26,7 +26,7 @@ services:
     staticPublishPath: ./frontend/build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://shoaib-portfolio-api.onrender.com
+        value: https://shoaib-portfolio-api-1k6v.onrender.com
       - key: NODE_ENV
         value: production
       - key: GENERATE_SOURCEMAP
