@@ -10,13 +10,13 @@ services:
       - key: FLASK_ENV
         value: production
       - key: DATABASE_URL
-        value: postgresql://portfolio_user:YEY89e5JySSO4h4XXOUtBI38wE8531Xa@dpg-d2b2emfdiees73eb6380-a/portfolio_rton
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: MAIL_USERNAME
-        value: codeeshoaib@gmail.com
+        sync: false
       - key: MAIL_PASSWORD
-        value: lizflgxnywpyphfo
+        sync: false
       - key: PORT
         value: 10000
 
