@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -68,8 +68,15 @@ export interface Stats {
 export const getDeveloperInfo = (): Promise<Developer> =>
   api.get('/api/developer').then(res => res.data);
 
-export const getSkills = (): Promise<Skill[]> =>
-  api.get('/api/skills').then(res => res.data);
+export const getSkills = (category?: string, featured?: boolean): Promise<Skill[]> => {
+  const params = new URLSearchParams();
+  if (category) params.append('category', category);
+  if (featured) params.append('featured', 'true');
+  return api.get(`/api/skills?${params.toString()}`).then(res => res.data);
+};
+
+export const getSkillCategories = (): Promise<string[]> =>
+  api.get('/api/skills/categories').then(res => res.data);
 
 export const getProjects = (featured?: boolean): Promise<Project[]> =>
   api.get(`/api/projects${featured ? '?featured=true' : ''}`).then(res => res.data);

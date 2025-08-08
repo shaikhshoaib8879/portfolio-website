@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import json
 
 db = SQLAlchemy()
 
@@ -54,6 +55,7 @@ class Skill(db.Model):
             'id': self.id,
             'name': self.name,
             'level': self.level,
+            'proficiency': self.level,  # Add proficiency alias for frontend compatibility
             'category': self.category,
             'icon': self.icon,
             'is_featured': self.is_featured
@@ -94,7 +96,7 @@ class Project(db.Model):
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'end_date': self.end_date.isoformat() if self.end_date else None,
             'created_date': self.created_at.isoformat(),
-            'technologies': [tech.technology.name for tech in self.technologies],
+            'technologies': [tech.technology.name for tech in self.technologies if tech.technology],
             'images': [img.to_dict() for img in self.images]
         }
 
@@ -201,7 +203,7 @@ class Experience(db.Model):
             'achievements': json.loads(self.achievements) if self.achievements else [],
             'is_current': self.is_current,
             'duration': self.duration,
-            'technologies': [tech.technology.name for tech in self.technologies]
+            'technologies': [tech.technology.name for tech in self.technologies if tech.technology]
         }
 
 class ExperienceTechnology(db.Model):
