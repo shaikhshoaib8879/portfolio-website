@@ -19,6 +19,8 @@ services:
         sync: false
       - key: MAIL_PASSWORD
         sync: false
+      - key: PORT
+        value: 10000
 
   # Frontend Static Site
   - type: web
@@ -27,8 +29,8 @@ services:
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
     envVars:
-      - key: REACT_APP_API_BASE
-        value: https://shoaib-portfolio-api.onrender.com/api
+      - key: REACT_APP_API_URL
+        value: https://shoaib-portfolio-api.onrender.com
       - key: NODE_ENV
         value: production
 

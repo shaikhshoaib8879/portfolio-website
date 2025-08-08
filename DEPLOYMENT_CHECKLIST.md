@@ -21,7 +21,7 @@
 2. **Create New Blueprint**
    - Click "New +" → "Blueprint"
    - Connect GitHub repository: `shaikhshoaib8879/portfolio-website`
-   - Select branch: `advance-animation`
+   - Select branch: `main`
    - Render detects `render.yaml` automatically
 
 3. **Review Services**
