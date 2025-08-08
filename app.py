@@ -44,7 +44,19 @@ mail = Mail(app)
 # Routes
 @app.route('/')
 def home():
-    return jsonify({"message": "Portfolio Backend API", "version": "2.0.0", "database": "SQLite"})
+    # Detect database type from connection string
+    db_type = "SQLite"
+    if 'postgresql' in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_type = "PostgreSQL"
+    elif 'mysql' in app.config['SQLALCHEMY_DATABASE_URI']:
+        db_type = "MySQL"
+    
+    return jsonify({
+        "message": "Portfolio Backend API", 
+        "version": "2.0.0", 
+        "database": db_type,
+        "status": "running"
+    })
 
 @app.route('/api/developer')
 def get_developer_info():

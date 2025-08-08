@@ -22,10 +22,12 @@ services:
   - type: web
     name: shoaib-portfolio-web
     env: static
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/build
     envVars:
       - key: REACT_APP_API_URL
         value: https://shoaib-portfolio-api.onrender.com
       - key: NODE_ENV
         value: production
+      - key: GENERATE_SOURCEMAP
+        value: "false"

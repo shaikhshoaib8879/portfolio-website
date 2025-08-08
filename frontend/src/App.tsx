@@ -12,7 +12,7 @@ import EnhancedProjects from './components/EnhancedProjects';
 import { ScrollProgressIndicator, ScrollToTopButton } from './components/ScrollIndicators';
 import { ModernLoader, ErrorScreen } from './components/ModernLoader';
 import DataWarning from './components/DataWarning';
-import './index.css';
+import './styles/premium-design.css';
 
 // Simplified components that use our API structure (keeping as fallback)
 const SimpleSkillsSection: React.FC<{ skills: any[], technologies: any[] }> = ({ skills, technologies }) => (
