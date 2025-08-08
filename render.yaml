@@ -10,15 +10,13 @@ services:
       - key: FLASK_ENV
         value: production
       - key: DATABASE_URL
-        fromDatabase:
-          name: shoaib-portfolio-db
-          property: connectionString
+        value: postgresql://portfolio_user:YEY89e5JySSO4h4XXOUtBI38wE8531Xa@dpg-d2b2emfdiees73eb6380-a/portfolio_rton
       - key: SECRET_KEY
         generateValue: true
       - key: MAIL_USERNAME
-        sync: false
+        value: codeeshoaib@gmail.com
       - key: MAIL_PASSWORD
-        sync: false
+        value: lizflgxnywpyphfo
       - key: PORT
         value: 10000
 
@@ -33,9 +31,3 @@ services:
         value: https://shoaib-portfolio-api.onrender.com
       - key: NODE_ENV
         value: production
-
-databases:
-  - name: shoaib-portfolio-db
-    databaseName: portfolio
-    user: portfolio_user
-    plan: free
