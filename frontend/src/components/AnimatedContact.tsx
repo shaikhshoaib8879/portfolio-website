@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, useAnimation, useInView, useMotionValue, useTransform } from 'framer-motion';
 import { Send, Mail, MapPin, Phone, Linkedin, Github, CheckCircle, AlertCircle, Coffee, MessageSquare, Sparkles, Zap, Heart, Star } from 'lucide-react';
+import { sendContactMessage } from '../utils/api';
 
 interface AnimatedContactProps {
   developer: any;
@@ -121,15 +122,22 @@ const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }
       if (onSubmit) {
         await onSubmit(formData);
       } else {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Send email via API
+        const response = await sendContactMessage({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message
+        });
+        console.log('Contact form submitted successfully:', response);
       }
       
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
       
       setTimeout(() => setStatus('idle'), 5000);
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Failed to send contact form:', error);
       setStatus('error');
       setTimeout(() => setStatus('idle'), 5000);
     }
