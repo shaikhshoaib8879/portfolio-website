@@ -16,12 +16,16 @@ CORS(app)
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-# Database configuration
+# Database configuration for psycopg3 compatibility
 database_url = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
 
-# Fix postgres:// URL format for modern SQLAlchemy
+# Handle different PostgreSQL URL formats
 if database_url.startswith('postgres://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    database_url = database_url.replace('postgres://', 'postgresql+psycopg://', 1)
+elif database_url.startswith('postgresql://'):
+    # Use psycopg (v3) adapter which is Python 3.13 compatible
+    if '+psycopg' not in database_url:
+        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

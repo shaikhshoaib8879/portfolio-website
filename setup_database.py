@@ -22,9 +22,11 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    # Handle PostgreSQL URL format for Render
+    # Handle PostgreSQL URL format for Render (psycopg v3 compatible)
     if app.config['SQLALCHEMY_DATABASE_URI'].startswith('postgres://'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql://')
+        app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgres://', 'postgresql+psycopg://')
+    elif 'postgresql://' in app.config['SQLALCHEMY_DATABASE_URI'] and '+psycopg' not in app.config['SQLALCHEMY_DATABASE_URI']:
+        app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_DATABASE_URI'].replace('postgresql://', 'postgresql+psycopg://')
     
     db.init_app(app)
     return app
