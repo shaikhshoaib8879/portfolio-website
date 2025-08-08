@@ -4,10 +4,8 @@ services:
     name: shoaib-portfolio-api
     env: python
     plan: free
-    region: oregon
     buildCommand: ./build.sh
     startCommand: python app.py
-    healthCheckPath: /
     envVars:
       - key: FLASK_ENV
         value: production
@@ -21,22 +19,13 @@ services:
         sync: false
       - key: MAIL_PASSWORD
         sync: false
-      - key: PORT
-        value: 5001
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: shoaib-portfolio-web
+    env: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
-    pullRequestPreviewsEnabled: false
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
     envVars:
       - key: REACT_APP_API_BASE
         value: https://shoaib-portfolio-api.onrender.com/api
@@ -48,4 +37,3 @@ databases:
     databaseName: portfolio
     user: portfolio_user
     plan: free
-    region: oregon
