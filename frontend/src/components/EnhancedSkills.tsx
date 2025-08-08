@@ -51,6 +51,9 @@ const AnimatedCounter: React.FC<{
   const isInView = useInView(ref, { once: true });
   const [displayValue, setDisplayValue] = useState(0);
 
+  // Ensure value is a valid number
+  const safeValue = isNaN(value) || !isFinite(value) ? 0 : Math.max(0, Math.min(100, value));
+
   useEffect(() => {
     if (!isInView) return;
 
@@ -61,7 +64,7 @@ const AnimatedCounter: React.FC<{
       
       // Ease-out animation
       const easeOut = 1 - Math.pow(1 - progress, 3);
-      setDisplayValue(Math.floor(value * easeOut));
+      setDisplayValue(Math.floor(safeValue * easeOut));
 
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -69,7 +72,7 @@ const AnimatedCounter: React.FC<{
     };
 
     animate();
-  }, [isInView, value, duration]);
+  }, [isInView, safeValue, duration]);
 
   return <span ref={ref}>{displayValue}{suffix}</span>;
 };
@@ -85,9 +88,12 @@ const RadialProgress: React.FC<{
   const ref = useRef<SVGSVGElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
   
+  // Ensure percentage is a valid number between 0 and 100
+  const safePercentage = isNaN(percentage) || !isFinite(percentage) ? 0 : Math.max(0, Math.min(100, percentage));
+  
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (percentage / 100) * circumference;
+  const offset = circumference - (safePercentage / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">
@@ -135,7 +141,7 @@ const RadialProgress: React.FC<{
       {/* Percentage text */}
       <div className="absolute inset-0 flex items-center justify-center">
         <span className="text-2xl font-bold text-white">
-          {isInView ? <AnimatedCounter value={percentage} suffix="%" /> : '0%'}
+          {isInView ? <AnimatedCounter value={safePercentage} suffix="%" /> : '0%'}
         </span>
       </div>
     </div>
@@ -151,6 +157,11 @@ const EnhancedSkillCard: React.FC<{
   const [isHovered, setIsHovered] = useState(false);
   const IconComponent = categoryIcons[skill.category as keyof typeof categoryIcons] || categoryIcons.default;
   const gradientColor = categoryColors[skill.category as keyof typeof categoryColors] || categoryColors.default;
+
+  // Ensure proficiency is a valid number
+  const safeProficiency = typeof skill.proficiency === 'number' && !isNaN(skill.proficiency) 
+    ? Math.max(0, Math.min(100, skill.proficiency))
+    : 0;
 
   const cardVariants = {
     hidden: { 
@@ -179,16 +190,16 @@ const EnhancedSkillCard: React.FC<{
         return (
           <div className="flex items-center justify-center mb-4">
             <RadialProgress 
-              percentage={skill.proficiency} 
+              percentage={safeProficiency} 
               delay={index * 0.1}
-              color={`hsl(${200 + (skill.proficiency * 1.8)}, 70%, 55%)`}
+              color={`hsl(${200 + (safeProficiency * 1.8)}, 70%, 55%)`}
             />
           </div>
         );
       
       case 'stars':
-        const stars = Math.floor(skill.proficiency / 20);
-        const halfStar = (skill.proficiency % 20) >= 10;
+        const stars = Math.floor(safeProficiency / 20);
+        const halfStar = (safeProficiency % 20) >= 10;
         return (
           <div className="flex items-center justify-center mb-4 gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -218,14 +229,14 @@ const EnhancedSkillCard: React.FC<{
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-gray-300">Proficiency</span>
               <span className="text-sm font-bold text-white">
-                <AnimatedCounter value={skill.proficiency} suffix="%" />
+                <AnimatedCounter value={safeProficiency} suffix="%" />
               </span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
               <motion.div
                 className={`h-full bg-gradient-to-r ${gradientColor} rounded-full relative`}
                 initial={{ width: 0 }}
-                whileInView={{ width: `${skill.proficiency}%` }}
+                whileInView={{ width: `${safeProficiency}%` }}
                 viewport={{ once: true }}
                 transition={{ duration: 1.5, delay: index * 0.1, ease: "easeOut" }}
               >

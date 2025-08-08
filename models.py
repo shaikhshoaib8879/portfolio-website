@@ -55,6 +55,7 @@ class Skill(db.Model):
             'id': self.id,
             'name': self.name,
             'level': self.level,
+            'proficiency': self.level,  # Add proficiency alias for frontend compatibility
             'category': self.category,
             'icon': self.icon,
             'is_featured': self.is_featured
