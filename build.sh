@@ -3,6 +3,10 @@
 
 echo "🚀 Starting build process..."
 
+# Upgrade pip first
+echo "⬆️  Upgrading pip..."
+pip install --upgrade pip
+
 # Install Python dependencies
 echo "📦 Installing Python dependencies..."
 pip install -r requirements.txt
@@ -18,9 +22,4 @@ else
     echo "ℹ️  No frontend folder found, skipping frontend build"
 fi
 
-# Setup database
-echo "🗄️  Setting up database..."
-python setup_database.py
-
 echo "✅ Build completed successfully!"
-echo "🌐 Your portfolio is ready for deployment!"
