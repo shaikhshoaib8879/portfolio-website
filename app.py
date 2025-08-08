@@ -15,7 +15,13 @@ CORS(app)
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
+
+# Database configuration - handle both old and new PostgreSQL URL formats
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///portfolio.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Mail configuration
@@ -360,10 +366,10 @@ def init_app():
             from init_db import init_database
             init_database()
 
+# Initialize the database when the app starts (for production)
+init_app()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    
     # Get port from environment variable (Render uses PORT)
     port = int(os.environ.get('PORT', 5001))
     debug = os.environ.get('FLASK_ENV', 'development') != 'production'

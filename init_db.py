@@ -17,15 +17,15 @@ def init_database():
     
     # Seed Developer Info
     developer = Developer(
-        name="John Doe",
-        title="Senior Software Developer",
+        name="Shoaib Shaikh",
+        title="Full Stack Developer",
         experience_years=3,
-        bio="Passionate software developer with 3+ years of experience in full-stack development. Specialized in Python, JavaScript, React, and cloud technologies.",
-        email="john.doe@example.com",
-        phone="+1 (555) 123-4567",
-        location="San Francisco, CA",
-        linkedin="https://linkedin.com/in/johndoe",
-        github="https://github.com/johndoe",
+        bio="Passionate full-stack developer with 3+ years of experience in modern web development. Specialized in React, Node.js, Python Flask, and cloud technologies. Creating innovative solutions with clean, efficient code.",
+        email="codeeshoaib@gmail.com",
+        phone="+91 9876543210",
+        location="Mumbai, India",
+        linkedin="https://linkedin.com/in/shaikhshoaib8879",
+        github="https://github.com/shaikhshoaib8879",
         resume_url="/static/resume.pdf"
     )
     db.session.add(developer)
