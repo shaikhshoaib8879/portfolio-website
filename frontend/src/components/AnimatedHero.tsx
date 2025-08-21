@@ -534,7 +534,7 @@ const AnimatedHero: React.FC<AnimatedHeroProps> = ({ developer }) => {
                 <div className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-yellow-400" />
                   <div className="text-white">
-                    <div className="text-2xl font-bold">{developer?.years_experience || 5}+</div>
+                    <div className="text-2xl font-bold">{developer?.years_experience || 3}+</div>
                     <div className="text-xs opacity-75">Years Experience</div>
                   </div>
                 </div>
@@ -578,7 +578,7 @@ const AnimatedHero: React.FC<AnimatedHeroProps> = ({ developer }) => {
                 <div className="flex items-center gap-2">
                   <Rocket className="w-5 h-5 text-purple-400" />
                   <div className="text-white">
-                    <div className="text-2xl font-bold">50+</div>
+                    <div className="text-2xl font-bold">10+</div>
                     <div className="text-xs opacity-75">Projects</div>
                   </div>
                 </div>
