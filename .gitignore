@@ -35,6 +35,9 @@ instance/
 .webassets-cache
 contacts.json
 
+# Seed data (sensitive)
+init_db.py
+
 # Frontend
 frontend/node_modules/
 frontend/build/

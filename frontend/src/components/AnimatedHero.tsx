@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { motion, useAnimation, useMotionValue, useTransform, useInView } from 'framer-motion';
-import { ChevronDown, Github, Linkedin, Mail, Download, Code, Zap, Rocket, Sparkles, Star, ArrowRight, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { motion, useInView } from 'framer-motion';
+import { ChevronDown, Github, Linkedin, Mail, Download, ArrowRight, TrendingUp, Zap, Rocket } from 'lucide-react';
 
 interface AnimatedHeroProps {
   developer: {
@@ -18,30 +18,11 @@ interface AnimatedHeroProps {
   };
 }
 
-interface FloatingElement {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  color: string;
-  speed: number;
-  rotation: number;
-  icon: any;
-}
-
 const AnimatedHero: React.FC<AnimatedHeroProps> = ({ developer }) => {
   const ref = useRef<HTMLElement>(null);
   const isInView = useInView(ref, { once: true });
   const [typewriterText, setTypewriterText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [floatingElements, setFloatingElements] = useState<FloatingElement[]>([]);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
-  // Advanced mouse tracking for parallax effects
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useTransform(mouseY, [-300, 300], [10, -10]);
-  const rotateY = useTransform(mouseX, [-300, 300], [-10, 10]);
 
   const roles = [
     '🚀 Full Stack Engineer',
@@ -51,56 +32,6 @@ const AnimatedHero: React.FC<AnimatedHeroProps> = ({ developer }) => {
     '☁️ DevOps Engineer',
     '🧠 AI Problem Solver'
   ];
-
-  // Initialize floating tech icons
-  useEffect(() => {
-    const techIcons = [Code, Zap, Rocket, Star, Github, Sparkles];
-    const elements = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * window.innerWidth,
-      y: Math.random() * window.innerHeight,
-      size: Math.random() * 30 + 20,
-      color: `hsl(${Math.random() * 360}, 70%, 60%)`,
-      speed: Math.random() * 2 + 1,
-      rotation: Math.random() * 360,
-      icon: techIcons[Math.floor(Math.random() * techIcons.length)]
-    }));
-    setFloatingElements(elements);
-  }, []);
-
-  // Animate floating elements
-  useEffect(() => {
-    const animateElements = () => {
-      setFloatingElements(prev => prev.map(element => {
-        // Magnetic attraction to mouse
-        const dx = mousePosition.x - element.x;
-        const dy = mousePosition.y - element.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const attraction = 50 / (distance + 1);
-        
-        return {
-          ...element,
-          x: (element.x + element.speed + dx * attraction * 0.01) % window.innerWidth,
-          y: (element.y + element.speed * 0.5 + dy * attraction * 0.01) % window.innerHeight,
-          rotation: element.rotation + element.speed
-        };
-      }));
-    };
-
-    const interval = setInterval(animateElements, 100);
-    return () => clearInterval(interval);
-  }, [mousePosition]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (rect) {
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      mouseX.set(x);
-      mouseY.set(y);
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    }
-  }, [mouseX, mouseY]);
 
   useEffect(() => {
     const typewriterEffect = () => {
@@ -174,94 +105,18 @@ const AnimatedHero: React.FC<AnimatedHeroProps> = ({ developer }) => {
     <motion.section
       ref={ref}
       className="relative min-h-screen overflow-hidden flex items-center justify-center"
-      onMouseMove={handleMouseMove}
       style={{
         background: `
           radial-gradient(circle at 20% 20%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
           radial-gradient(circle at 80% 80%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
           radial-gradient(circle at 40% 60%, rgba(120, 219, 255, 0.3) 0%, transparent 50%),
           linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%)
-        `,
-        perspective: '1000px'
+        `
       }}
     >
-      {/* Floating Tech Icons Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {floatingElements.map((element) => {
-          const IconComponent = element.icon;
-          return (
-            <motion.div
-              key={element.id}
-              className="absolute pointer-events-none z-10"
-              style={{
-                left: element.x,
-                top: element.y,
-                width: element.size,
-                height: element.size,
-              }}
-              animate={{
-                rotate: element.rotation,
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.7, 0.3]
-              }}
-              transition={{
-                duration: 4 + Math.random() * 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <IconComponent
-                size={element.size}
-                className="text-white"
-                style={{ 
-                  color: element.color,
-                  filter: 'drop-shadow(0 0 10px currentColor)'
-                }}
-              />
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Neural Network Background Effect */}
-      <div className="absolute inset-0 z-0">
-        <svg className="w-full h-full opacity-20">
-          <defs>
-            <linearGradient id="neuralGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#667eea" stopOpacity="0.5" />
-              <stop offset="50%" stopColor="#764ba2" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#f093fb" stopOpacity="0.5" />
-            </linearGradient>
-          </defs>
-          {Array.from({ length: 50 }, (_, i) => (
-            <motion.line
-              key={i}
-              x1={Math.random() * 100 + '%'}
-              y1={Math.random() * 100 + '%'}
-              x2={Math.random() * 100 + '%'}
-              y2={Math.random() * 100 + '%'}
-              stroke="url(#neuralGradient)"
-              strokeWidth="1"
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ 
-                pathLength: [0, 1, 0], 
-                opacity: [0, 0.7, 0] 
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-                ease: "easeInOut"
-              }}
-            />
-          ))}
-        </svg>
-      </div>
-
-      {/* Main Content Container with 3D Transform */}
+      {/* Main Content Container */}
       <motion.div
         className="relative z-20 max-w-7xl mx-auto px-6 py-20"
-        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.5 }}

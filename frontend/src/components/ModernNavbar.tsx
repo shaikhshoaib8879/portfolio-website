@@ -20,6 +20,7 @@ const ModernNavbar: React.FC<ModernNavbarProps> = ({ developer }) => {
     { id: 'about', label: 'About', icon: User, path: '/about' },
     { id: 'skills', label: 'Skills', icon: Code, path: '/skills' },
     { id: 'projects', label: 'Projects', icon: Briefcase, path: '/projects' },
+    { id: 'experience', label: 'Experience', icon: Briefcase, path: '/experience' },
     { id: 'contact', label: 'Contact', icon: Mail, path: '/contact' }
   ];
 
@@ -30,7 +31,7 @@ const ModernNavbar: React.FC<ModernNavbarProps> = ({ developer }) => {
 
       // Update active section based on scroll position
       if (location.pathname === '/') {
-        const sections = ['home', 'about', 'skills', 'projects', 'contact'];
+        const sections = ['home', 'about', 'skills', 'projects', 'experience', 'contact'];
         const currentSection = sections.find(section => {
           const element = document.getElementById(section);
           if (element) {

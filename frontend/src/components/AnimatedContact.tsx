@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, useAnimation, useInView, useMotionValue, useTransform } from 'framer-motion';
-import { Send, Mail, MapPin, Phone, Linkedin, Github, CheckCircle, AlertCircle, Coffee, MessageSquare, Sparkles, Zap, Heart, Star } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, useAnimation, useInView } from 'framer-motion';
+import { Send, Mail, MapPin, Phone, Linkedin, Github, CheckCircle, AlertCircle, Coffee } from 'lucide-react';
 import { sendContactMessage } from '../utils/api';
 
 interface AnimatedContactProps {
@@ -8,31 +8,11 @@ interface AnimatedContactProps {
   onSubmit?: (data: any) => Promise<void>;
 }
 
-interface FloatingParticle {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  speed: number;
-  color: string;
-  icon: React.ComponentType<any>;
-}
-
 const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const controls = useAnimation();
-  
-  // Mouse tracking for interactive effects
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useTransform(mouseY, [-300, 300], [15, -15]);
-  const rotateY = useTransform(mouseX, [-300, 300], [-15, 15]);
-  
-  // Floating particles
-  const [particles, setParticles] = useState<FloatingParticle[]>([]);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -42,53 +22,6 @@ const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [focusedField, setFocusedField] = useState<string | null>(null);
-
-  // Initialize floating particles
-  useEffect(() => {
-    const particleIcons = [Mail, Coffee, MessageSquare, Heart, Star, Sparkles, Zap];
-    const newParticles: FloatingParticle[] = Array.from({ length: 20 }, (_, i) => ({
-      id: i,
-      x: Math.random() * (window.innerWidth || 1200),
-      y: Math.random() * (window.innerHeight || 800),
-      size: 16 + Math.random() * 16,
-      speed: 0.5 + Math.random() * 1,
-      color: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b'][Math.floor(Math.random() * 6)],
-      icon: particleIcons[Math.floor(Math.random() * particleIcons.length)]
-    }));
-    setParticles(newParticles);
-  }, []);
-
-  // Animate particles
-  useEffect(() => {
-    const animateParticles = () => {
-      setParticles(prev => prev.map(particle => {
-        const dx = mousePosition.x - particle.x;
-        const dy = mousePosition.y - particle.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const attraction = 30 / (distance + 1);
-        
-        return {
-          ...particle,
-          x: (particle.x + particle.speed + dx * attraction * 0.005) % (window.innerWidth || 1200),
-          y: (particle.y + particle.speed * 0.7 + dy * attraction * 0.005) % (window.innerHeight || 800),
-        };
-      }));
-    };
-
-    const interval = setInterval(animateParticles, 50);
-    return () => clearInterval(interval);
-  }, [mousePosition]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (rect) {
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      mouseX.set(x);
-      mouseY.set(y);
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    }
-  }, [mouseX, mouseY]);
 
   useEffect(() => {
     if (isInView) {
@@ -129,7 +62,6 @@ const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }
           subject: formData.subject,
           message: formData.message
         });
-        console.log('Contact form submitted successfully:', response);
       }
       
       setStatus('success');
@@ -151,61 +83,21 @@ const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }
   };
 
   return (
-    <motion.section 
-      ref={ref} 
+    <motion.section
+      ref={ref}
       className="relative min-h-screen py-20 overflow-hidden flex items-center justify-center"
-      onMouseMove={handleMouseMove}
       style={{
         background: `
           radial-gradient(circle at 25% 25%, rgba(139, 92, 246, 0.3) 0%, transparent 50%),
           radial-gradient(circle at 75% 75%, rgba(236, 72, 153, 0.3) 0%, transparent 50%),
           radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
           linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0e1628 75%, #0a0a0a 100%)
-        `,
-        perspective: '1000px'
+        `
       }}
     >
-      {/* Floating Particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {particles.map((particle) => {
-          const IconComponent = particle.icon;
-          return (
-            <motion.div
-              key={particle.id}
-              className="absolute"
-              style={{
-                left: particle.x,
-                top: particle.y,
-                width: particle.size,
-                height: particle.size,
-              }}
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.4, 0.8, 0.4],
-                rotate: [0, 180, 360]
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              <IconComponent
-                size={particle.size}
-                style={{ 
-                  color: particle.color,
-                  filter: 'drop-shadow(0 0 8px currentColor)'
-                }}
-              />
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Main Container with 3D Effect */}
+      {/* Main Container */}
       <motion.div
         className="relative z-10 max-w-7xl mx-auto px-6"
-        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1 }}
@@ -353,8 +245,6 @@ const AnimatedContact: React.FC<AnimatedContactProps> = ({ developer, onSubmit }
             <motion.form
               onSubmit={handleSubmit}
               className="relative p-8 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
-              style={{ transformStyle: 'preserve-3d' }}
-              whileHover={{ rotateY: 2, rotateX: 2 }}
             >
               {/* Magical glow effect */}
               <motion.div

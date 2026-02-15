@@ -12,6 +12,7 @@ import EnhancedProjects from './components/EnhancedProjects';
 import { ScrollProgressIndicator, ScrollToTopButton } from './components/ScrollIndicators';
 import { ModernLoader, ErrorScreen } from './components/ModernLoader';
 import DataWarning from './components/DataWarning';
+import Footer from './components/Footer';
 import './styles/premium-design.css';
 
 // Simplified components that use our API structure (keeping as fallback)
@@ -390,6 +391,8 @@ function App() {
           <AnimatedContact developer={developer} />
         </section>
         
+        <Footer developer={developer} />
+
         <ScrollToTopButton />
       </div>
     </Router>

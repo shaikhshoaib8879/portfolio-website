@@ -413,15 +413,6 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills: initialSkills, 
     }
   }, [skills, isInView, controls]);
 
-  // Debug logging
-  console.log('=== EnhancedSkills Debug ===');
-  console.log('Skills:', skills.length, skills);
-  console.log('Categories:', categories);
-  console.log('Selected Category:', selectedCategory);
-  console.log('Loading:', loading);
-  console.log('IsInView:', isInView);
-  console.log('Initial Skills:', initialSkills?.length || 0);
-
   // Handle empty skills data
   if (!initialSkills || initialSkills.length === 0) {
     return (
@@ -484,29 +475,6 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills: initialSkills, 
         `
       }}
     >
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-2 h-2 bg-white/10 rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [-20, 20, -20],
-              opacity: [0.3, 0.8, 0.3],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
-
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -629,7 +597,6 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills: initialSkills, 
             ))
           ) : skills.length > 0 ? (
             skills.map((skill, index) => {
-              console.log(`Rendering skill ${index}:`, skill);
               return (
                 <EnhancedSkillCard
                   key={`${skill.id}-${selectedCategory}`}

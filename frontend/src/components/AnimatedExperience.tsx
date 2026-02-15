@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { motion, useAnimation, useInView, useMotionValue, useTransform } from 'framer-motion';
-import { Building2, Calendar, MapPin, TrendingUp, Users, Award, Briefcase, GraduationCap, Rocket, Star, Zap, Target } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useAnimation, useInView } from 'framer-motion';
+import { Building2, Calendar, MapPin, Briefcase, Award, Star, Zap, Rocket } from 'lucide-react';
 import EmptyState from './EmptyState';
 
 interface Experience {
@@ -23,82 +23,18 @@ interface AnimatedExperienceProps {
   experiences: Experience[];
 }
 
-interface FloatingIcon {
-  id: number;
-  x: number;
-  y: number;
-  icon: React.ComponentType<any>;
-  color: string;
-  size: number;
-  speed: number;
-}
-
 const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const controls = useAnimation();
-  
-  // Mouse tracking for 3D effects
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useTransform(mouseY, [-300, 300], [10, -10]);
-  const rotateY = useTransform(mouseX, [-300, 300], [-10, 10]);
-  
-  // Floating background icons
-  const [floatingIcons, setFloatingIcons] = useState<FloatingIcon[]>([]);
   const [hoveredExperience, setHoveredExperience] = useState<number | null>(null);
 
-  // All hooks must be called before any early returns
   useEffect(() => {
     if (isInView) {
       controls.start('visible');
     }
   }, [controls, isInView]);
 
-  // Initialize floating icons
-  useEffect(() => {
-    if (!experiences || experiences.length === 0) return; // Only run if we have experiences
-    
-    const icons = [Rocket, Star, Zap, Target, Award, TrendingUp, Users, Building2];
-    const newIcons: FloatingIcon[] = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * (window.innerWidth || 1200),
-      y: Math.random() * (window.innerHeight || 800),
-      icon: icons[Math.floor(Math.random() * icons.length)],
-      color: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b'][Math.floor(Math.random() * 6)],
-      size: 20 + Math.random() * 15,
-      speed: 0.3 + Math.random() * 0.7
-    }));
-    setFloatingIcons(newIcons);
-  }, [experiences]);
-
-  // Animate floating icons
-  useEffect(() => {
-    if (!experiences || experiences.length === 0) return; // Only run if we have experiences
-    
-    const animateIcons = () => {
-      setFloatingIcons(prev => prev.map(icon => ({
-        ...icon,
-        x: (icon.x + icon.speed) % (window.innerWidth || 1200),
-        y: icon.y + Math.sin(Date.now() * 0.001 + icon.id) * 0.5,
-      })));
-    };
-
-    const interval = setInterval(animateIcons, 50);
-    return () => clearInterval(interval);
-  }, [experiences]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    const rect = ref.current?.getBoundingClientRect();
-    if (rect) {
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      mouseX.set(x * 0.1);
-      mouseY.set(y * 0.1);
-    }
-  }, [mouseX, mouseY]);
-
-  // Handle empty experiences data - moved after all hooks
   if (!experiences || experiences.length === 0) {
     return (
       <motion.section
@@ -124,7 +60,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
               Work <span className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent">Experience</span>
             </motion.h2>
           </div>
-          <EmptyState 
+          <EmptyState
             type="experience"
             title="No Experience Available"
             description="Work experience information is currently unavailable. Please check back later."
@@ -145,7 +81,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
   };
 
   const timelineVariants = {
-    hidden: { 
+    hidden: {
       opacity: 0,
       scaleY: 0
     },
@@ -162,15 +98,13 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
   const experienceVariants = {
     hidden: (index: number) => ({
       opacity: 0,
-      x: index % 2 === 0 ? -100 : 100,
-      y: 50,
-      scale: 0.8
+      x: index % 2 === 0 ? -80 : 80,
+      y: 30
     }),
     visible: (index: number) => ({
       opacity: 1,
       x: 0,
       y: 0,
-      scale: 1,
       transition: {
         type: "spring",
         stiffness: 100,
@@ -181,61 +115,20 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
   };
 
   return (
-    <motion.section 
+    <motion.section
       ref={ref}
+      id="experience"
       className="relative min-h-screen py-20 overflow-hidden"
-      onMouseMove={handleMouseMove}
       style={{
         background: `
           radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.2) 0%, transparent 50%),
           radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.2) 0%, transparent 50%),
           radial-gradient(circle at 40% 90%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
           linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0e1628 75%, #0a0a0a 100%)
-        `,
-        perspective: '1000px'
+        `
       }}
     >
-      {/* Floating Background Icons */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {floatingIcons.map((iconData) => {
-          const IconComponent = iconData.icon;
-          return (
-            <motion.div
-              key={iconData.id}
-              className="absolute opacity-10"
-              style={{
-                left: iconData.x,
-                top: iconData.y,
-                width: iconData.size,
-                height: iconData.size,
-              }}
-              animate={{
-                rotate: [0, 360],
-                scale: [1, 1.2, 1]
-              }}
-              transition={{
-                duration: 8 + Math.random() * 4,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            >
-              <IconComponent
-                size={iconData.size}
-                style={{ color: iconData.color }}
-              />
-            </motion.div>
-          );
-        })}
-      </div>
-
-      {/* Main Container with 3D Transform */}
-      <motion.div
-        className="relative z-10 max-w-7xl mx-auto px-6"
-        style={{ rotateX, rotateY, transformStyle: 'preserve-3d' }}
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-      >
+      <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Section Header */}
         <motion.div
           className="text-center mb-20"
@@ -243,7 +136,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 1, delay: 0.3 }}
         >
-          <motion.h2 
+          <motion.h2
             className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
             style={{
               background: "linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%)",
@@ -261,36 +154,25 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
               ease: "linear"
             }}
           >
-            My Journey 🚀
+            My Journey
           </motion.h2>
-          
-          <motion.p 
+
+          <motion.p
             className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto leading-relaxed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.8 }}
           >
-            From ambitious dreams to extraordinary achievements - 
-            here's the story of how I've been turning code into magic! ✨
+            From ambitious dreams to extraordinary achievements -
+            here's the story of how I've been turning code into impact.
           </motion.p>
         </motion.div>
 
         {/* Experience Timeline */}
         <div className="relative">
-          {/* Central Timeline Line */}
+          {/* Timeline Line - left-aligned on mobile, center on md+ */}
           <motion.div
-            className="absolute left-1/2 top-0 w-1 h-full transform -translate-x-1/2"
-            style={{
-              background: "linear-gradient(to bottom, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe)"
-            }}
-            variants={timelineVariants}
-            initial="hidden"
-            animate={controls}
-          />
-
-          {/* Timeline Glow Effect */}
-          <motion.div
-            className="absolute left-1/2 top-0 w-4 h-full transform -translate-x-1/2 blur-sm opacity-50"
+            className="absolute left-4 md:left-1/2 top-0 w-1 h-full md:-translate-x-1/2"
             style={{
               background: "linear-gradient(to bottom, #667eea, #764ba2, #f093fb, #4facfe, #00f2fe)"
             }}
@@ -311,16 +193,14 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                 key={experience.id}
                 custom={index}
                 variants={experienceVariants}
-                className={`relative flex items-center ${
-                  index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'
-                }`}
+                className="relative flex items-start"
                 onHoverStart={() => setHoveredExperience(experience.id)}
                 onHoverEnd={() => setHoveredExperience(null)}
               >
-                {/* Timeline Node */}
+                {/* Timeline Node - left on mobile, center on md+ */}
                 <motion.div
-                  className="absolute left-1/2 transform -translate-x-1/2 z-20"
-                  whileHover={{ scale: 1.5, rotate: 360 }}
+                  className="absolute left-4 md:left-1/2 -translate-x-1/2 z-20"
+                  whileHover={{ scale: 1.3 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
                   <div className="w-8 h-8 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-full border-4 border-white shadow-2xl flex items-center justify-center">
@@ -336,24 +216,20 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                   </div>
                 </motion.div>
 
-                {/* Experience Card */}
-                <motion.div
-                  className={`w-full max-w-md mx-8 ${
-                    index % 2 === 0 ? 'mr-auto ml-8' : 'ml-auto mr-8'
+                {/* Experience Card - always right of line on mobile, alternating on md+ */}
+                <div
+                  className={`ml-12 md:ml-0 w-full md:w-[calc(50%-2rem)] ${
+                    index % 2 === 0
+                      ? 'md:mr-auto md:pr-8'
+                      : 'md:ml-auto md:pl-8'
                   }`}
-                  whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: index % 2 === 0 ? 5 : -5,
-                    z: 50 
-                  }}
-                  style={{ transformStyle: 'preserve-3d' }}
                 >
                   <div className="relative group">
                     {/* Card Background with Glassmorphism */}
                     <motion.div
                       className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl"
                       animate={{
-                        borderColor: hoveredExperience === experience.id 
+                        borderColor: hoveredExperience === experience.id
                           ? ['rgba(139, 92, 246, 0.5)', 'rgba(236, 72, 153, 0.5)', 'rgba(59, 130, 246, 0.5)', 'rgba(139, 92, 246, 0.5)']
                           : 'rgba(255, 255, 255, 0.2)'
                       }}
@@ -375,42 +251,31 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                       {/* Header */}
                       <div className="space-y-3">
                         {/* Company & Current Badge */}
-                        <div className="flex items-center justify-between">
-                          <motion.div
-                            className="flex items-center gap-2"
-                            whileHover={{ x: 5 }}
-                          >
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-2">
                             <Building2 size={20} className="text-purple-400" />
                             <h3 className="text-lg font-bold text-white">
                               {experience.company}
                             </h3>
-                          </motion.div>
-                          
+                          </div>
+
                           {experience.is_current && (
                             <motion.div
                               className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full text-xs font-bold text-white"
-                              animate={{ 
+                              animate={{
                                 scale: [1, 1.1, 1],
-                                boxShadow: [
-                                  '0 0 10px rgba(16, 185, 129, 0.5)',
-                                  '0 0 20px rgba(16, 185, 129, 0.8)',
-                                  '0 0 10px rgba(16, 185, 129, 0.5)'
-                                ]
                               }}
                               transition={{ duration: 2, repeat: Infinity }}
                             >
-                              🚀 CURRENT
+                              CURRENT
                             </motion.div>
                           )}
                         </div>
 
                         {/* Job Title */}
-                        <motion.h4
-                          className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400"
-                          whileHover={{ scale: 1.05 }}
-                        >
+                        <h4 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
                           {experience.title}
-                        </motion.h4>
+                        </h4>
 
                         {/* Meta Information */}
                         <div className="flex flex-wrap gap-4 text-sm text-gray-300">
@@ -430,23 +295,13 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                       </div>
 
                       {/* Description */}
-                      <motion.p
-                        className="text-gray-300 leading-relaxed"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.5 }}
-                      >
+                      <p className="text-gray-300 leading-relaxed">
                         {experience.description}
-                      </motion.p>
+                      </p>
 
                       {/* Achievements */}
                       {experience.achievements.length > 0 && (
-                        <motion.div
-                          className="space-y-3"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.7 }}
-                        >
+                        <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <Award size={18} className="text-yellow-400" />
                             <h5 className="font-semibold text-white">Key Achievements</h5>
@@ -466,17 +321,12 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                               </motion.li>
                             ))}
                           </ul>
-                        </motion.div>
+                        </div>
                       )}
 
                       {/* Technologies */}
                       {experience.technologies.length > 0 && (
-                        <motion.div
-                          className="space-y-3"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 1 }}
-                        >
+                        <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <Zap size={18} className="text-cyan-400" />
                             <h5 className="font-semibold text-white">Technologies Used</h5>
@@ -486,8 +336,8 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                               <motion.span
                                 key={techIndex}
                                 className="px-3 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 rounded-full text-xs font-medium text-purple-300 backdrop-blur-sm"
-                                whileHover={{ 
-                                  scale: 1.1, 
+                                whileHover={{
+                                  scale: 1.1,
                                   backgroundColor: 'rgba(139, 92, 246, 0.3)',
                                   borderColor: 'rgba(139, 92, 246, 0.6)'
                                 }}
@@ -499,29 +349,11 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
                               </motion.span>
                             ))}
                           </div>
-                        </motion.div>
+                        </div>
                       )}
                     </div>
                   </div>
-                </motion.div>
-
-                {/* Side Decoration */}
-                <motion.div
-                  className={`absolute ${
-                    index % 2 === 0 ? 'right-8' : 'left-8'
-                  } top-1/2 transform -translate-y-1/2 opacity-20`}
-                  animate={{
-                    rotate: [0, 360],
-                    scale: [1, 1.2, 1]
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Infinity,
-                    ease: "linear"
-                  }}
-                >
-                  <TrendingUp size={40} className="text-purple-400" />
-                </motion.div>
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -536,16 +368,15 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
         >
           <motion.p
             className="text-xl text-gray-300 mb-8"
-            whileHover={{ scale: 1.05 }}
           >
-            Want to be part of my next chapter? Let's create something extraordinary together! 🌟
+            Want to be part of my next chapter? Let's create something extraordinary together!
           </motion.p>
-          
+
           <motion.button
             className="group px-8 py-4 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-full font-semibold text-white shadow-2xl"
-            whileHover={{ 
-              scale: 1.05, 
-              boxShadow: "0 20px 40px rgba(139, 92, 246, 0.4)" 
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 20px 40px rgba(139, 92, 246, 0.4)"
             }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
@@ -559,7 +390,7 @@ const AnimatedExperience: React.FC<AnimatedExperienceProps> = ({ experiences }) 
             </span>
           </motion.button>
         </motion.div>
-      </motion.div>
+      </div>
     </motion.section>
   );
 };

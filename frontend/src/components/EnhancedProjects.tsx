@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, useAnimation, useInView, useMotionValue, useTransform } from 'framer-motion';
-import { 
-  Github, ExternalLink, Calendar, Star, Zap, TrendingUp, Award, Code, 
-  Eye, Heart, GitBranch, Users, Clock, ArrowUpRight, Play 
+import {
+  Github, ExternalLink, Calendar, Star, TrendingUp, Award, Code,
+  Clock, ArrowUpRight
 } from 'lucide-react';
 import EmptyState from './EmptyState';
 
@@ -147,34 +147,6 @@ const Enhanced3DProjectCard: React.FC<{
             transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
           />
 
-          {/* Floating code symbols */}
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            {['{', '}', '<', '>', '=', '+', '(', ')', ';', ':', '[', ']'].map((symbol, i) => (
-              <motion.div
-                key={i}
-                className="absolute text-white text-lg md:text-2xl font-mono font-bold"
-                style={{
-                  left: `${15 + (i % 4) * 25}%`,
-                  top: `${15 + Math.floor(i / 4) * 30}%`,
-                }}
-                animate={{
-                  opacity: [0.1, 0.6, 0.1],
-                  scale: [0.8, 1.2, 0.8],
-                  rotate: [0, 360, 0],
-                  y: [-10, 10, -10]
-                }}
-                transition={{
-                  duration: 4 + Math.random() * 3,
-                  repeat: Infinity,
-                  delay: Math.random() * 3,
-                  ease: "easeInOut"
-                }}
-              >
-                {symbol}
-              </motion.div>
-            ))}
-          </div>
-
           {/* Status Badge */}
           <motion.div
             className={`absolute top-4 right-4 bg-gradient-to-r ${getStatusColor(project.status)} px-3 py-1 rounded-full text-sm font-bold text-white flex items-center gap-2 shadow-lg`}
@@ -312,49 +284,20 @@ const Enhanced3DProjectCard: React.FC<{
             )}
           </motion.div>
 
-          {/* Project Stats/Dates */}
-          <motion.div
-            className="flex items-center justify-between pt-4 border-t border-white/10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 + 0.5 }}
-          >
-            <div className="flex items-center gap-2 text-gray-400 text-sm">
-              <Calendar className="w-4 h-4" />
-              <span>{new Date(project.start_date).getFullYear()}</span>
-            </div>
-            
+          {/* Project Date */}
+          {project.start_date && (
             <motion.div
-              className="flex items-center gap-3"
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.1 + 0.7 }}
+              className="flex items-center pt-4 border-t border-white/10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 + 0.5 }}
             >
-              <motion.div
-                className="flex items-center gap-1 text-gray-400 text-sm"
-                whileHover={{ scale: 1.1, color: '#60a5fa' }}
-              >
-                <Eye className="w-4 h-4" />
-                <span>{Math.floor(Math.random() * 100) + 50}</span>
-              </motion.div>
-              
-              <motion.div
-                className="flex items-center gap-1 text-gray-400 text-sm"
-                whileHover={{ scale: 1.1, color: '#f87171' }}
-              >
-                <Heart className="w-4 h-4" />
-                <span>{Math.floor(Math.random() * 50) + 10}</span>
-              </motion.div>
-              
-              <motion.div
-                className="flex items-center gap-1 text-gray-400 text-sm"
-                whileHover={{ scale: 1.1, color: '#34d399' }}
-              >
-                <GitBranch className="w-4 h-4" />
-                <span>{Math.floor(Math.random() * 20) + 5}</span>
-              </motion.div>
+              <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <Calendar className="w-4 h-4" />
+                <span>{new Date(project.start_date).getFullYear()}</span>
+              </div>
             </motion.div>
-          </motion.div>
+          )}
         </div>
 
         {/* Shimmer effect on hover */}
