@@ -238,7 +238,7 @@ function App() {
   const [showDataWarning, setShowDataWarning] = useState(false);
   const [missingData, setMissingData] = useState<string[]>([]);
 
-  const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5001/api';
+  const API_BASE = `${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api`;
 
   useEffect(() => {
     fetchData();

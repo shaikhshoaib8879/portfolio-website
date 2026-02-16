@@ -341,7 +341,7 @@ const EnhancedSkills: React.FC<EnhancedSkillsProps> = ({ skills: initialSkills, 
   const [categories, setCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   
-  const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:5001/api';
+  const API_BASE = `${process.env.REACT_APP_API_URL || 'http://localhost:5001'}/api`;
 
   // Fetch categories on mount
   useEffect(() => {
